@@ -75,7 +75,7 @@ button.warn{background:linear-gradient(135deg,#d98a00,#a96600);border-color:var(
 </style>
 </head>
 <body>
-<header><h1>SYNAPSE</h1><span id="clock"></span></header>
+<header><h1>SYNAPSE</h1></span></header>
 <div class="sub">Faites glisser pour choisir votre émotion</div>
 <div id="track"></div>
 <div class="dots" id="dots"></div>
@@ -126,7 +126,6 @@ track.onmousedown=e=>{down=true;sx=e.pageX;sl=track.scrollLeft;track.style.scrol
 window.onmouseup=()=>{if(down){down=false;track.style.scrollSnapType='x mandatory'}};
 track.onmousemove=e=>{if(down)track.scrollLeft=sl-(e.pageX-sx)};
 
-setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR')},1000);
 
 /* ---- Pop-up ---- */
 const modal=document.getElementById('modal'), box=document.getElementById('box');

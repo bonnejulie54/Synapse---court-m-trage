@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Synapse — Injection d’émotions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b12; --panel:#0f1724; --steel:#8a97aa; --line:#223049;
+  --cyan:#3fd0ff; --blue:#2a7bff; --text:#e6eefb; --warn:#ffb020;
+  --font:'Chakra Petch','Segoe UI',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font)}
+body{
+  background:
+   radial-gradient(900px 500px at 50% 45%,rgba(42,123,255,.18),transparent 70%),
+   linear-gradient(rgba(63,208,255,.04) 1px,transparent 1px) 0 0/48px 48px,
+   linear-gradient(90deg,rgba(63,208,255,.04) 1px,transparent 1px) 0 0/48px 48px,
+   var(--bg);
+  display:flex;flex-direction:column;
+}
+header{padding:28px 40px 0;display:flex;justify-content:space-between;align-items:baseline}
+header h1{font-weight:300;font-size:clamp(22px,3vw,34px);letter-spacing:.35em}
+header span{color:var(--steel);font-size:14px;letter-spacing:.15em}
+.sub{padding:6px 40px;color:var(--steel);font-weight:300;font-size:clamp(14px,1.8vw,18px)}
+
+#track{
+  flex:1;display:flex;align-items:center;gap:0;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;scrollbar-width:none;padding:0 calc(50vw - 130px);
+}
+#track::-webkit-scrollbar{display:none}
+.card{
+  flex:0 0 260px;height:min(62vh,420px);scroll-snap-align:center;margin:0 10px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;
+  background:linear-gradient(160deg,rgba(24,36,56,.9),rgba(11,17,28,.9));
+  border:1px solid var(--line);border-radius:6px 40px 6px 40px;
+  transform:scale(.78);opacity:.45;transition:transform .35s,opacity .35s,border-color .35s,box-shadow .35s;
+  cursor:pointer;position:relative;
+}
+.card.on{transform:scale(1);opacity:1;border-color:var(--cyan);box-shadow:0 0 40px rgba(63,208,255,.25),inset 0 0 30px rgba(42,123,255,.12)}
+.card svg{width:128px;height:128px;stroke:var(--cyan);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 8px rgba(63,208,255,.6))}
+.card .name{font-size:26px;font-weight:600;letter-spacing:.12em}
+.card .tag{font-size:13px;color:var(--steel);font-weight:300}
+.dots{display:flex;justify-content:center;gap:10px;padding:0 0 26px}
+.dots i{width:26px;height:3px;background:var(--line);transition:.3s}
+.dots i.on{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+
+/* Pop-up */
+#modal{position:fixed;inset:0;background:rgba(3,6,12,.8);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+#modal.open{display:flex}
+.box{width:min(560px,100%);background:var(--panel);border:1px solid var(--cyan);border-radius:6px 36px 6px 36px;padding:36px 32px;text-align:center;box-shadow:0 0 60px rgba(42,123,255,.35);animation:pop .3s ease-out}
+.box.warn{border-color:var(--warn);box-shadow:0 0 60px rgba(255,176,32,.3)}
+@keyframes pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+.box h2{font-weight:600;font-size:26px;letter-spacing:.08em;margin-bottom:12px}
+.box.warn h2{color:var(--warn)}
+.box p{color:var(--steel);font-size:18px;line-height:1.5;margin-bottom:26px}
+.box p b{color:var(--text);font-weight:600}
+.scan{width:170px;height:170px;margin:0 auto 24px;border-radius:50%;border:2px solid var(--cyan);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 0 30px rgba(63,208,255,.4),inset 0 0 30px rgba(63,208,255,.2)}
+.scan::after{content:"";position:absolute;left:0;right:0;height:3px;background:var(--cyan);box-shadow:0 0 14px var(--cyan);animation:sweep 1.8s ease-in-out infinite}
+@keyframes sweep{0%,100%{top:8%}50%{top:90%}}
+.scan svg{width:84px;height:84px;stroke:var(--cyan);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.8}
+.warn-ic{font-size:70px;line-height:1;color:var(--warn);margin-bottom:14px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:.35}}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden;margin:6px 0 20px}
+.bar div{height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 12px var(--cyan)}
+.row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+button{font-family:var(--font);font-size:18px;letter-spacing:.1em;padding:14px 30px;border-radius:4px 16px 4px 16px;cursor:pointer;border:1px solid var(--cyan);background:linear-gradient(135deg,var(--blue),#1a4fb0);color:#fff;box-shadow:0 0 18px rgba(42,123,255,.5)}
+button:active{transform:scale(.97)}
+button.ghost{background:transparent;color:var(--steel);border-color:var(--line);box-shadow:none}
+button.warn{background:linear-gradient(135deg,#d98a00,#a96600);border-color:var(--warn);box-shadow:0 0 18px rgba(255,176,32,.4)}
+@media (max-width:600px){header{padding:18px 20px 0}.sub{padding:6px 20px}}
+</style>
+</head>
+<body>
+<header><h1>SYNAPSE</h1><span id="clock"></span></header>
+<div class="sub">Faites glisser pour choisir votre émotion</div>
+<div id="track"></div>
+<div class="dots" id="dots"></div>
+<div id="modal"><div class="box" id="box"></div></div>
+
+<script>
+const ico = {
+ joie:'<circle cx="32" cy="32" r="22"/><path d="M22 36c3 7 17 7 20 0"/><path d="M24 25v2M40 25v2"/>',
+ rire:'<circle cx="32" cy="32" r="22"/><path d="M20 33h24c0 9-5 14-12 14s-12-5-12-14z"/><path d="M22 24c2-3 5-3 7 0M35 24c2-3 5-3 7 0"/>',
+ adrenaline:'<path d="M36 6L14 36h14l-4 22 26-34H36z"/>',
+ calme:'<path d="M6 32c8-10 14-10 20 0s12 10 20 0 8-6 12-4"/><path d="M6 44c8-10 14-10 20 0s12 10 20 0 8-6 12-4" opacity=".5"/><circle cx="32" cy="16" r="5"/>',
+ amour:'<path d="M32 54S8 40 8 24a13 13 0 0 1 24-6 13 13 0 0 1 24 6c0 16-24 30-24 30z"/>',
+ courage:'<path d="M32 6l20 8v16c0 14-9 24-20 28C21 54 12 44 12 30V14z"/><path d="M32 20v22M24 30h16"/>',
+ euphorie:'<circle cx="32" cy="32" r="8"/><path d="M32 6v10M32 48v10M6 32h10M48 32h10M14 14l7 7M43 43l7 7M50 14l-7 7M21 43l-7 7"/>',
+ nostalgie:'<circle cx="32" cy="32" r="22"/><path d="M32 18v15l10 6"/><path d="M10 14l-4 8 8 2" />'
+};
+const emotions = [
+ {id:'joie',nom:'Joie',tag:'Légèreté et bonne humeur'},
+ {id:'rire',nom:'Rire',tag:'Éclats spontanés'},
+ {id:'adrenaline',nom:'Adrénaline',tag:'Énergie et réflexes'},
+ {id:'calme',nom:'Sérénité',tag:'Esprit apaisé'},
+ {id:'amour',nom:'Amour',tag:'Chaleur et tendresse'},
+ {id:'courage',nom:'Courage',tag:'Détermination'},
+ {id:'euphorie',nom:'Euphorie',tag:'Exaltation totale'},
+ {id:'nostalgie',nom:'Nostalgie',tag:'Souvenirs lointains'}
+];
+const svg = k => `<svg viewBox="0 0 64 64">${ico[k]}</svg>`;
+const track = document.getElementById('track'), dots = document.getElementById('dots');
+emotions.forEach((e,i)=>{
+  const c = document.createElement('div'); c.className='card'; c.dataset.i=i;
+  c.innerHTML = svg(e.id)+`<div class="name">${e.nom}</div><div class="tag">${e.tag}</div>`;
+  c.onclick = () => {
+    if(c.classList.contains('on')) openFlow(e);
+    else c.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+  };
+  track.appendChild(c); dots.appendChild(document.createElement('i'));
+});
+const cards = [...track.children], dd = [...dots.children];
+function update(){
+  const mid = track.scrollLeft + track.clientWidth/2; let best=0, bd=1e9;
+  cards.forEach((c,i)=>{const d=Math.abs(c.offsetLeft+c.offsetWidth/2-mid); if(d<bd){bd=d;best=i}});
+  cards.forEach((c,i)=>{c.classList.toggle('on',i===best);dd[i].classList.toggle('on',i===best)});
+}
+track.addEventListener('scroll',()=>requestAnimationFrame(update)); update();
+// glisser à la souris (desktop)
+let down=false,sx=0,sl=0;
+track.onmousedown=e=>{down=true;sx=e.pageX;sl=track.scrollLeft;track.style.scrollSnapType='none'};
+window.onmouseup=()=>{if(down){down=false;track.style.scrollSnapType='x mandatory'}};
+track.onmousemove=e=>{if(down)track.scrollLeft=sl-(e.pageX-sx)};
+
+setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('fr-FR')},1000);
+
+/* ---- Pop-up ---- */
+const modal=document.getElementById('modal'), box=document.getElementById('box');
+const arm='<svg viewBox="0 0 64 64"><path d="M14 54V30c0-3 4-3 4 0v-6c0-3 4-3 4 0v-2c0-3 4-3 4 0v2c0-3 4-3 4 0v14l5-6c3-2 6 1 3 4L36 54z"/></svg>';
+function show(html,warn){box.className='box'+(warn?' warn':'');box.innerHTML=html;modal.classList.add('open')}
+function close(){modal.classList.remove('open')}
+window.go = fn => fn();
+
+function openFlow(e){
+  step1(e);
+}
+function step1(e){
+  show(`<h2>${e.nom}</h2><div class="scan">${arm}</div>
+  <p>Posez votre <b>avant-bras</b> sur le scanner pour l’identification.</p>
+  <div class="row"><button class="ghost" onclick="close()">Annuler</button>
+  <button id="ok">Bras en place</button></div>`);
+  document.getElementById('ok').onclick = () => e.id==='adrenaline' ? stepWarn(e) : stepValidate(e);
+}
+function stepWarn(e){
+  show(`<div class="warn-ic">⚠</div><h2>ATTENTION</h2>
+  <p>Solde du compte bancaire <b>insuffisant</b>.<br>Il ne reste que <b>1 dose</b> disponible.</p>
+  <div class="row"><button class="ghost" onclick="close()">Annuler</button>
+  <button class="warn" id="ok">Continuer</button></div>`,true);
+  document.getElementById('ok').onclick = () => stepValidate(e,true);
+}
+function stepValidate(e,last){
+  show(`<h2>${last?'Dernière dose':'Confirmation'}</h2>
+  <div class="scan">${svg(e.id)}</div>
+  <p>${last?'Valider l’injection de la <b>dernière dose</b> d’':'Valider le début de l’injection d’'}<b>${e.nom.toLowerCase()}</b> ?</p>
+  <div class="row"><button class="ghost" onclick="close()">Annuler</button>
+  <button class="${last?'warn':''}" id="ok">${last?'Valider la dernière injection':'Valider l’injection'}</button></div>`,last);
+  document.getElementById('ok').onclick = () => inject(e);
+}
+function inject(e){
+  show(`<h2>Injection en cours</h2><p>Ne retirez pas votre bras…</p>
+  <div class="bar"><div id="b"></div></div><p id="pc">0 %</p>`);
+  const b=document.getElementById('b'), pc=document.getElementById('pc'); let p=0;
+  const t=setInterval(()=>{p+=2;b.style.width=p+'%';pc.textContent=p+' %';
+    if(p>=100){clearInterval(t);done(e)}},80);
+}
+function done(e){
+  show(`<h2>${e.nom} injectée</h2><div class="scan">${svg(e.id)}</div>
+  <p>Processus terminé. Vous pouvez retirer votre bras.</p>
+  <div class="row"><button onclick="reset()">Terminer</button></div>`);
+}
+function reset(){
+  close();
+  track.style.scrollSnapType='none';
+  track.scrollLeft=0;
+  requestAnimationFrame(()=>{track.style.scrollSnapType='x mandatory';update()});
+}
+</script>
+</body>
+</html>
